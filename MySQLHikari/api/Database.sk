@@ -5,11 +5,12 @@ import:
 	com.zaxxer.hikari.HikariConfig
 	com.zaxxer.hikari.HikariDataSource
 
-expression [the] database %text%:
-	return type: object
-	get:
+effect set %object% to [the] database %text%:
+	trigger:
 
-		set {_db::*} to split expr-1 at "?"
+		try (the raw expr-1).close()
+
+		set {_db::*} to split expr-2 at "?"
 		set {_userfind::*} to split {_db::2} at "user="
 		set {_user::*} to split {_userfind::2} at "&"
 		set {_passwordfind::*} to split {_db::2} at "password="
@@ -22,18 +23,21 @@ expression [the] database %text%:
 		{_hikari}.setUsername({_user::1})
 		{_hikari}.setPassword({_password::1})
 
+		{_hikari}.setMaximumPoolSize(3)
+		{_hikari}.setMaxLifetime(30000)
+
+
+		{_hikari}.addDataSourceProperty("cachePrepStmts", "true")
+		{_hikari}.addDataSourceProperty("prepStmtCacheSize", "250")
+		{_hikari}.addDataSourceProperty("prepStmtCacheSqlLimit", "2048")
+		{_hikari}.addDataSourceProperty("useServerPrepStmts", "true")
+		{_hikari}.addDataSourceProperty("useLocalSessionState", "true")
+		{_hikari}.addDataSourceProperty("rewriteBatchedStatements", "true")
+		{_hikari}.addDataSourceProperty("cacheResultSetMetadata", "true")
+		{_hikari}.addDataSourceProperty("cacheServerConfiguration", "true")
+		{_hikari}.addDataSourceProperty("elideSetAutoCommits", "true")
+		{_hikari}.addDataSourceProperty("maintainTimeStats", "false")
+
 		set {_dbsource} to new HikariDataSource({_hikari})
 
-		{_dbsource}.setMaximumPoolSize(30)
-		{_dbsource}.cachePrepStmts(true)
-		{_dbsource}.prepStmtCacheSize(250)
-		{_dbsource}.prepStmtCacheSqlLimit(2048)
-		{_dbsource}.useServerPrepStmts(true)
-		{_dbsource}.useLocalSessionState(true)
-		{_dbsource}.rewriteBatchedStatements(true)
-		{_dbsource}.cacheResultSetMetadata(true)
-		{_dbsource}.cacheServerConfiguration(true)
-		{_dbsource}.elideSetAutoCommits(true)
-		{_dbsource}.maintainTimeStats(false)
-
-		return {_dbsource}.getConnection()
+		set (the raw expr-1) to {_dbsource}.getConnection()
