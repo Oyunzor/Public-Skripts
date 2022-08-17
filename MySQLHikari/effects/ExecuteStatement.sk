@@ -1,8 +1,6 @@
 import:
-	java.sql.Connection
-	java.sql.Statement
-	java.sql.ResultSet
-	java.sql.ResultSetMetaData
+	com.zaxxer.hikari.HikariConfig
+	com.zaxxer.hikari.HikariDataSource
 	ch.njol.skript.variables.Variables
 
 effect execute %text% in %object% [1¦and store [[the] (output|result)[s]] (to|in) [the] [var[iable]] %-objects%]:
@@ -10,8 +8,8 @@ effect execute %text% in %object% [1¦and store [[the] (output|result)[s]] (to|i
 
 		delay the effect
 
-		set {_statement} to (expr-2).createStatement()
-
+		set {_statement} to (expr-2).createStatement(1005, 1008)
+		
 		if (parse mark) is not 1:
 
 			try {_statement}.executeUpdate(expr-1)
@@ -37,11 +35,11 @@ effect execute %text% in %object% [1¦and store [[the] (output|result)[s]] (to|i
 				set {_local} to false
 				set {_targetVar} to (subtext of ("%the raw expr-3%") from characters 2 to ((length of ("%the raw expr-3%")) - 2))
 
-			try {_resultSet}.last()
+			{_resultSet}.last()
 
 			if {_resultSet}.getRow() > 0:
 
-				{_resultSet}.first()
+				{_resultSet}.beforeFirst()
 			
 				while {_resultSet}.next() is true:
 
@@ -59,7 +57,7 @@ effect execute %text% in %object% [1¦and store [[the] (output|result)[s]] (to|i
 
 				while {_i} <= {_columnCount}:
 
-					Variables.setVariable("%{_targetVar}%%{_resultSetMetaData}.getColumnName({_i})%", {_resultSetMetaData}.getColumnName({_i}), event, true)
+					Variables.setVariable("%{_targetVar}%%{_resultSetMetaData}.getColumnName({_i})%", {_resultSetMetaData}.getColumnName({_i}), event, {_local})
 
 					add 1 to {_i}
 		

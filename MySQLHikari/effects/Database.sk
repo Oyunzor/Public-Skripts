@@ -1,14 +1,21 @@
 import:
-	java.sql.DriverManager
-	java.sql.Connection
 	java.lang.Class
 	com.zaxxer.hikari.HikariConfig
 	com.zaxxer.hikari.HikariDataSource
+	ch.njol.skript.variables.Variables
 
 effect set %object% to [the] database %text%:
 	trigger:
 
-		try (the raw expr-1).close()
+		if ("%the raw expr-1%").startsWith("{_") is true:
+			set {_local} to true
+			set {_dsVar} to (subtext of ("%the raw expr-1%") from characters 3 to ((length of ("%the raw expr-1%")) - 1))
+		else:
+			set {_local} to false
+			set {_dsVar} to (subtext of ("%the raw expr-1%") from characters 2 to ((length of ("%the raw expr-1%")) - 1))
+		set {_ds} to Variables.getVariable("%{_dsVar}%::datasource", event, {_local})
+
+		try {_ds}.close()
 
 		set {_db::*} to split expr-2 at "?"
 		set {_userfind::*} to split {_db::2} at "user="
@@ -24,6 +31,7 @@ effect set %object% to [the] database %text%:
 		{_hikari}.setPassword({_password::1})
 
 		{_hikari}.setMaximumPoolSize(3)
+		{_hikari}.setMaxLifetime(30000)
 
 
 		{_hikari}.addDataSourceProperty("cachePrepStmts", "true")
@@ -40,3 +48,4 @@ effect set %object% to [the] database %text%:
 		set {_dbsource} to new HikariDataSource({_hikari})
 
 		set (the raw expr-1) to {_dbsource}.getConnection()
+		Variables.setVariable("%{_dsVar}%::datasource", {_dbsource}, event, {_local})
