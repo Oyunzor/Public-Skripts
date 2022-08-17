@@ -5,7 +5,6 @@ import:
 	java.sql.ResultSetMetaData
 	ch.njol.skript.variables.Variables
 
-#effect execute %text% in %object% [1¦and store [the] result in %-objects%]:
 effect execute %text% in %object% [1¦and store [[the] (output|result)[s]] (to|in) [the] [var[iable]] %-objects%]:
 	trigger:
 
