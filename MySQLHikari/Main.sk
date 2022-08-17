@@ -1,0 +1,2 @@
+on load:
+	set {sql::driver} to "com.mysql.cj.jdbc.Driver"

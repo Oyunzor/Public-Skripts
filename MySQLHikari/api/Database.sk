@@ -1,0 +1,39 @@
+import:
+	java.sql.DriverManager
+	java.sql.Connection
+	java.lang.Class
+	com.zaxxer.hikari.HikariConfig
+	com.zaxxer.hikari.HikariDataSource
+
+expression [the] database %text%:
+	return type: object
+	get:
+
+		set {_db::*} to split expr-1 at "?"
+		set {_userfind::*} to split {_db::2} at "user="
+		set {_user::*} to split {_userfind::2} at "&"
+		set {_passwordfind::*} to split {_db::2} at "password="
+		set {_password::*} to split {_passwordfind::2} at "&"
+		if {_userfind::1}.endsWith("&") is true:
+			set {_db::1} to "%{_db::1}%?%subtext of ({_userfind::1}) from characters 1 to ((length of ({_userfind::1})) - 1)%"
+
+		set {_hikari} to new HikariConfig()
+		{_hikari}.setJdbcUrl("jdbc:%{_db::1}%")
+		{_hikari}.setUsername({_user::1})
+		{_hikari}.setPassword({_password::1})
+
+		set {_dbsource} to new HikariDataSource({_hikari})
+
+		{_dbsource}.setMaximumPoolSize(30)
+		{_dbsource}.cachePrepStmts(true)
+		{_dbsource}.prepStmtCacheSize(250)
+		{_dbsource}.prepStmtCacheSqlLimit(2048)
+		{_dbsource}.useServerPrepStmts(true)
+		{_dbsource}.useLocalSessionState(true)
+		{_dbsource}.rewriteBatchedStatements(true)
+		{_dbsource}.cacheResultSetMetadata(true)
+		{_dbsource}.cacheServerConfiguration(true)
+		{_dbsource}.elideSetAutoCommits(true)
+		{_dbsource}.maintainTimeStats(false)
+
+		return {_dbsource}.getConnection()

@@ -1,0 +1,8 @@
+import:
+	ch.njol.skript.variables.Variables
+
+expression [the] last sql error:
+	get:
+		return Variables.getVariable("000theLastSQLError", event, true)
+	set:
+		Variables.setVariable("000theLastSQLError", change value, event, true)
