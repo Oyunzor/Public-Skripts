@@ -5,6 +5,7 @@ import:
 	java.sql.ResultSetMetaData
 	ch.njol.skript.variables.Variables
 
+#effect execute %text% in %object% [1¦and store [the] result in %-objects%]:
 effect execute %text% in %object% [1¦and store [[the] (output|result)[s]] (to|in) [the] [var[iable]] %-objects%]:
 	trigger:
 
@@ -37,13 +38,29 @@ effect execute %text% in %object% [1¦and store [[the] (output|result)[s]] (to|i
 				set {_local} to false
 				set {_targetVar} to (subtext of ("%the raw expr-3%") from characters 2 to ((length of ("%the raw expr-3%")) - 2))
 
-			while {_resultSet}.next() is true:
+			try {_resultSet}.last()
+
+			if {_resultSet}.getRow() > 0:
+
+				{_resultSet}.first()
+			
+				while {_resultSet}.next() is true:
+
+					set {_i} to 1
+
+					while {_i} <= {_columnCount}:
+
+						Variables.setVariable("%{_targetVar}%%{_resultSetMetaData}.getColumnName({_i})%::%{_resultSet}.getRow()%", {_resultSet}.getObject({_i}), event, {_local})
+
+						add 1 to {_i}
+			
+			else:
 
 				set {_i} to 1
 
 				while {_i} <= {_columnCount}:
 
-					Variables.setVariable("%{_targetVar}%%{_resultSetMetaData}.getColumnName({_i})%::%{_resultSet}.getRow()%", {_resultSet}.getObject({_i}), event, {_local})
+					Variables.setVariable("%{_targetVar}%%{_resultSetMetaData}.getColumnName({_i})%", {_resultSetMetaData}.getColumnName({_i}), event, true)
 
 					add 1 to {_i}
 		
