@@ -24,7 +24,6 @@ effect set %object% to [the] database %text%:
 		{_hikari}.setPassword({_password::1})
 
 		{_hikari}.setMaximumPoolSize(3)
-		{_hikari}.setMaxLifetime(30000)
 
 
 		{_hikari}.addDataSourceProperty("cachePrepStmts", "true")
